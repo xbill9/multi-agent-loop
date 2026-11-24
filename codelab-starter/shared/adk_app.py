@@ -40,6 +40,60 @@ LOG_LEVELS = click.Choice(
     case_sensitive=False,
 )
 
+A2A_PREFIX = "/a2a/agent"
+
+
+def _mount_a2a(app: typing.Any, agents_dir: str) -> None:
+    """Serves the agent over A2A at /a2a/agent, whatever its folder is called.
+
+    ADK 2 runs a folder that contains agent.py in single-agent mode and would
+    mount A2A under the folder name (/a2a/researcher locally, /a2a/app in the
+    container). The orchestrator and the codelab expect /a2a/agent, so the
+    routes are mounted here instead of through get_fast_api_app(a2a=True).
+    """
+    import importlib
+
+    from a2a.server.tasks import (
+        InMemoryPushNotificationConfigStore,
+        InMemoryTaskStore,
+    )
+    from a2a.types import AgentCapabilities
+    from google.adk.a2a import _compat
+    from google.adk.a2a.executor.a2a_agent_executor import A2aAgentExecutor
+    from google.adk.a2a.utils.agent_card_builder import AgentCardBuilder
+    from google.adk.apps import App
+    from google.adk.artifacts import InMemoryArtifactService
+    from google.adk.memory import InMemoryMemoryService
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
+
+    sys.path.insert(0, os.path.abspath(agents_dir))
+    agent = importlib.import_module("agent").root_agent
+    if isinstance(agent, App):
+        agent = agent.root_agent
+
+    card = asyncio.run(AgentCardBuilder(
+        agent=agent,
+        rpc_url=f"http://127.0.0.1{A2A_PREFIX}",
+        capabilities=AgentCapabilities(streaming=True),
+    ).build())
+    runner = Runner(
+        app_name=agent.name,
+        agent=agent,
+        session_service=InMemorySessionService(),
+        artifact_service=InMemoryArtifactService(),
+        memory_service=InMemoryMemoryService(),
+    )
+    _compat.attach_a2a_routes_to_app(
+        app,
+        agent_card=card,
+        agent_executor=A2aAgentExecutor(runner=runner),
+        task_store=InMemoryTaskStore(),
+        push_config_store=InMemoryPushNotificationConfigStore(),
+        prefix=A2A_PREFIX,
+    )
+
+
 @click.command()
 @click.argument(
     "agents_dir",
@@ -195,41 +249,6 @@ def main(
     reload = False
     reload_agents = False
 
-    folders_to_delete = []
-    files_to_delete = []
-
-    if a2a:
-        from pathlib import Path
-        from a2a.types import AgentCapabilities
-        from google.adk.a2a.utils.agent_card_builder import AgentCardBuilder
-        from google.adk.cli.utils.agent_loader import AgentLoader
-        from google.adk.apps import App
-
-        loader = AgentLoader(agents_dir)
-        agents = loader.list_agents()
-        if len(agents) == 0:
-            agents = ["agent"]
-        for agent_name in agents:
-            agent_card_dir = Path(agents_dir) / agent_name
-            if not agent_card_dir.exists():
-                agent_card_dir.mkdir(exist_ok=True)
-                folders_to_delete.append(agent_card_dir)
-            card_file = agent_card_dir / "agent.json"
-            if card_file.exists():
-                continue
-            files_to_delete.append(card_file)
-            agent = loader.load_agent(agent_name)
-            if isinstance(agent, App):
-                agent = agent.root_agent
-            card_builder = AgentCardBuilder(
-                agent=agent,
-                rpc_url=f"http://127.0.0.1/a2a/{agent_name}",
-                capabilities=AgentCapabilities(streaming=True)
-            )
-            agent_card = asyncio.run(card_builder.build())
-            card_json = agent_card.model_dump_json(indent=2)
-            card_file.write_text(card_json)
-
     app = fast_api.get_fast_api_app(
         agents_dir=agents_dir,
         session_service_uri=session_service_uri,
@@ -240,7 +259,6 @@ def main(
         web=with_web_ui or False,
         trace_to_cloud=trace_to_cloud,
         otel_to_cloud=otel_to_cloud,
-        a2a=a2a,
         host=host,
         port=port,
         url_prefix=url_prefix,
@@ -248,16 +266,10 @@ def main(
         extra_plugins=extra_plugins,
     )
     if a2a:
-        from starlette.middleware.base import BaseHTTPMiddleware
+        _mount_a2a(app, agents_dir)
         from a2a_utils import a2a_card_dispatch
+        from starlette.middleware.base import BaseHTTPMiddleware
         app.add_middleware(BaseHTTPMiddleware, dispatch=a2a_card_dispatch)
-    for fd in files_to_delete:
-        fd.unlink()
-    for fd in folders_to_delete:
-        try:
-            fd.rmdir()
-        except OSError:
-            pass
     config = uvicorn.Config(
         app=app,
         host=host,

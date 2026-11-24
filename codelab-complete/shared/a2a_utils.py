@@ -16,11 +16,8 @@ import json
 import subprocess
 from urllib.parse import urlparse
 
-from a2a.utils.constants import (
-    AGENT_CARD_WELL_KNOWN_PATH,
-    EXTENDED_AGENT_CARD_PATH,
-    PREV_AGENT_CARD_WELL_KNOWN_PATH
-)
+from a2a.utils.constants import AGENT_CARD_WELL_KNOWN_PATH
+
 from google.adk.agents.remote_a2a_agent import DEFAULT_TIMEOUT
 from google.auth.transport.requests import AuthorizedSession, Request
 from google.auth.exceptions import DefaultCredentialsError
@@ -31,6 +28,10 @@ from starlette.datastructures import URL
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.requests import Request as StarletteRequest
 from starlette.responses import Response
+
+# Removed from a2a-sdk 1.x; kept so cards at the 0.3.x paths are still rewritten.
+PREV_AGENT_CARD_WELL_KNOWN_PATH = "/.well-known/agent.json"
+EXTENDED_AGENT_CARD_PATH = "/agent/authenticatedExtendedCard"
 
 
 async def a2a_card_dispatch(
@@ -69,7 +70,6 @@ async def a2a_card_dispatch(
             body = body.tobytes()
         body = body.decode(response.charset)
         card = json.loads(body)
-        agent_url = URL(card["url"])
 
         headers = request.headers
         host = headers.get("x-forwarded-host", request.url.hostname)
@@ -86,12 +86,16 @@ async def a2a_card_dispatch(
             ):
                 port = None
 
-        agent_url = agent_url.replace(
-            scheme=scheme,
-            hostname=host,
-            port=port,
-        )
-        card["url"] = str(agent_url)
+        def rewrite(url: str) -> str:
+            return str(URL(url).replace(scheme=scheme, hostname=host, port=port))
+
+        # a2a-sdk 0.3.x keeps the endpoint in "url";
+        # 1.x keeps one per entry in "supportedInterfaces".
+        if "url" in card:
+            card["url"] = rewrite(card["url"])
+        for iface in card.get("supportedInterfaces", []):
+            if "url" in iface:
+                iface["url"] = rewrite(iface["url"])
         response_headers = response.headers
         del response_headers["content-length"] # Content length will be recalculated
         response = Response(

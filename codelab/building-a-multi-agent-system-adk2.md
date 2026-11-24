@@ -399,6 +399,8 @@ Duration: 15
 ./deploy.sh
 ```
 
+On a new project, the first deploy asks to create an Artifact Registry repository for the container images. Answer `Y`. The five builds take about 15 minutes in total.
+
 The script reads each agent's URL after it deploys and passes the agent card addresses to the orchestrator:
 
 ```bash

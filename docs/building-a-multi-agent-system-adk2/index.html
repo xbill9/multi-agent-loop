@@ -354,6 +354,7 @@ done
         <p><code>deploy.sh</code> deploys five Cloud Run services from source: <code>researcher</code>, <code>judge</code>, <code>content-builder</code>, <code>orchestrator</code> and the <code>course-creator</code> web app. The four agent services only accept authenticated calls; the web app is public.</p>
 <pre><code language="language-bash" class="language-bash">./deploy.sh
 </code></pre>
+<p>On a new project, the first deploy asks to create an Artifact Registry repository for the container images. Answer <code>Y</code>. The five builds take about 15 minutes in total.</p>
 <p>The script reads each agent&#39;s URL after it deploys and passes the agent card addresses to the orchestrator:</p>
 <pre><code language="language-bash" class="language-bash">--set-env-vars RESEARCHER_AGENT_CARD_URL=$RESEARCHER_URL/a2a/agent/.well-known/agent-card.json
 </code></pre>

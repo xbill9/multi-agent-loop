@@ -1,0 +1,394 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Building a Multi-Agent System with ADK 2.0 and A2A</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="building-a-multi-agent-system-adk2"
+                  title="Building a Multi-Agent System with ADK 2.0 and A2A"
+                  environment="web"
+                  feedback-link="https://github.com/xbill9/multi-agent-loop/issues">
+    
+      <google-codelab-step label="Overview" duration="3">
+        <p>In this codelab you build an <strong>AI course creator</strong>: give it a topic such as &#34;the history of coffee&#34; and it returns a finished course module.</p>
+<p>Four agents share the work:</p>
+<ul>
+<li><strong>Researcher</strong> gathers information on the topic with Google Search.</li>
+<li><strong>Judge</strong> grades the research and returns <code>pass</code> or <code>fail</code> with feedback.</li>
+<li><strong>Content builder</strong> turns approved research into a course with a title and sections.</li>
+<li><strong>Orchestrator</strong> runs the researcher and judge in a loop until the judge passes (up to three rounds), then hands the research to the content builder.</li>
+</ul>
+<p>Each agent is its own service. The orchestrator talks to the other three over the <strong>Agent2Agent (A2A)</strong> protocol, so each one can be deployed, scaled and replaced on its own.</p>
+<h2 class="checklist" is-upgraded>What you&#39;ll learn</h2>
+<ul class="checklist">
+<li>Define agents with the Agent Development Kit (ADK) 2.0</li>
+<li>Return structured output from an agent with a Pydantic schema</li>
+<li>Write a custom agent that ends a loop</li>
+<li>Combine agents with <code>LoopAgent</code> and <code>SequentialAgent</code></li>
+<li>Call remote agents over A2A with <code>RemoteA2aAgent</code></li>
+<li>Run the system locally and deploy it to Cloud Run</li>
+</ul>
+<h2 is-upgraded>What you need</h2>
+<ul>
+<li>A Google Cloud project with billing turned on (workshop credits work)</li>
+<li>A browser; everything runs in Cloud Shell</li>
+</ul>
+<aside class="special"><p> This codelab is an update of Google&#39;s <a href="https://codelabs.developers.google.com/codelabs/production-ready-ai-roadshow/1-building-a-multi-agent-system/building-a-multi-agent-system" target="_blank">Building a Multi-Agent System</a> for google-adk 2.15 and a2a-sdk 1.3. The code is in <a href="https://github.com/xbill9/multi-agent-loop" target="_blank">xbill9/multi-agent-loop</a>. </p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Claim credits and create a project" duration="10">
+        <h2 is-upgraded>Claim your credits</h2>
+<ol type="1">
+<li>Open the claim link from your workshop organizer and sign in with a <strong>personal Gmail</strong> account.</li>
+<li>Join the Google Developer Program and claim the badge if asked.</li>
+<li>Finish the verification on your phone.</li>
+<li>Wait 2 to 5 minutes for the trial billing account to appear.</li>
+</ol>
+<aside class="warning"><p><strong>CRED-101</strong> means you are signed in with a work or school account. Switch to your @gmail.com account.<br><strong>CRED-103</strong> means verification failed. Refresh and retry, or switch your phone to mobile data. </p>
+</aside>
+<h2 is-upgraded>Create a project</h2>
+<ol type="1">
+<li>Open <a href="https://console.cloud.google.com/projectcreate" target="_blank">console.cloud.google.com/projectcreate</a>.</li>
+<li>Name the project and pick the <strong>trial billing account</strong> from your credit.</li>
+<li>Click <strong>Create</strong> and copy the <strong>project ID</strong>.</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Set up your environment" duration="8">
+        <p>Open <a href="https://shell.cloud.google.com" target="_blank">Cloud Shell</a> and point it at your project:</p>
+<pre><code language="language-bash" class="language-bash">gcloud config set project YOUR_PROJECT_ID
+gcloud auth list
+</code></pre>
+<p><code>gcloud auth list</code> should show your Gmail account as active.</p>
+<p>Enable the APIs the lab uses:</p>
+<pre><code language="language-bash" class="language-bash">gcloud services enable \
+  run.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  aiplatform.googleapis.com \
+  compute.googleapis.com
+</code></pre>
+<p>Clone the repository and move into the starter:</p>
+<pre><code language="language-bash" class="language-bash">git clone https://github.com/xbill9/multi-agent-loop.git
+cd multi-agent-loop/codelab-starter
+</code></pre>
+<p>Install the dependencies for all four agents and the web app:</p>
+<pre><code language="language-bash" class="language-bash">python3 -m pip install -r requirements.txt
+</code></pre>
+<aside class="warning"><p> If pip stops with <code>externally-managed-environment</code>, add <code>--user</code>, or <code>--break-system-packages</code> in Cloud Shell, whose machine is reset between sessions. </p>
+</aside>
+<p>Create the environment file and load it:</p>
+<pre><code language="language-bash" class="language-bash">cp .env.example .env
+sed -i &#34;s/^GOOGLE_CLOUD_PROJECT=.*/GOOGLE_CLOUD_PROJECT=\&#34;$(gcloud config get-value project)\&#34;/&#34; .env
+set -a; source .env; set +a
+</code></pre>
+<p>The starter has one folder per agent under <code>agents/</code>, plus the web app in <code>app/</code>. Each agent folder has an <code>agent.py</code> with <code>TODO</code> comments that you fill in over the next steps.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Build the researcher" duration="5">
+        <p>The researcher is a single ADK <code>Agent</code>: a model, a description that other agents read, and an instruction.</p>
+<p>Open <code>agents/researcher/agent.py</code> and replace the <code>TODO</code> with:</p>
+<pre><code language="language-python" class="language-python"># --- Researcher Agent ---
+researcher = Agent(
+    name=&#34;researcher&#34;,
+    model=MODEL,
+    description=&#34;Gathers information on a topic using Google Search.&#34;,
+    instruction=&#34;&#34;&#34;
+    You are an expert researcher. Your goal is to find comprehensive and accurate information on the user&#39;s topic.
+    Summarize your findings clearly.
+    If you receive feedback that your research is insufficient, use the feedback to refine your next search.
+    DO NOT output any function calls. Provide your research directly as text.
+    &#34;&#34;&#34;,
+)
+
+root_agent = researcher
+</code></pre>
+<p><code>root_agent</code> is the name ADK looks for when it loads the folder as an agent.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Build the judge" duration="5">
+        <p>The judge returns structured feedback instead of free text. A Pydantic model defines the shape, and <code>output_schema</code> makes the agent answer in that shape.</p>
+<p>Open <code>agents/judge/agent.py</code> and replace both <code>TODO</code>s with:</p>
+<pre><code language="language-python" class="language-python"># --- Data Models ---
+class JudgeFeedback(BaseModel):
+    &#34;&#34;&#34;Structured feedback from the Judge agent.&#34;&#34;&#34;
+    status: Literal[&#34;pass&#34;, &#34;fail&#34;] = Field(
+        description=&#34;Whether the research is sufficient (&#39;pass&#39;) or needs more work (&#39;fail&#39;).&#34;
+    )
+    feedback: str = Field(
+        description=&#34;Detailed feedback on what is missing or needs clarification if status is &#39;fail&#39;. If &#39;pass&#39;, a brief confirmation.&#34;
+    )
+
+# --- Judge Agent ---
+judge = Agent(
+    name=&#34;judge&#34;,
+    model=MODEL,
+    description=&#34;Evaluates research findings for completeness and accuracy.&#34;,
+    instruction=&#34;&#34;&#34;
+    You are a strict editor and fact-checker.
+    Evaluate the &#39;research_findings&#39; against the user&#39;s original request.
+    Determine if the findings are sufficient to create a high-quality course.
+    If they are good enough, output status=&#39;pass&#39;.
+    If they are missing key information, are too vague, or likely inaccurate, output status=&#39;fail&#39; and provide specific, constructive &#39;feedback&#39; on what to research next.
+    &#34;&#34;&#34;,
+    output_schema=JudgeFeedback,
+    # Disallow transfers as it uses output_schema
+    disallow_transfer_to_parent=True,
+    disallow_transfer_to_peers=True,
+)
+
+root_agent = judge
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Test each agent alone" duration="5">
+        <p><code>adk run</code> loads an agent folder and sends it one message, so you can check each agent before wiring them together.</p>
+<p>Ask the researcher a question:</p>
+<pre><code language="language-bash" class="language-bash">adk run agents/researcher &#34;Find the population of Tokyo in 2020&#34;
+</code></pre>
+<p>The researcher answers with figures from the 2020 census.</p>
+<p>Give the judge some thin research:</p>
+<pre><code language="language-bash" class="language-bash">adk run agents/judge &#34;Topic: Tokyo. Findings: Tokyo is a city.&#34;
+</code></pre>
+<p>The judge returns JSON with <code>"status": "fail"</code> and a list of what is missing:</p>
+<pre><code language="language-json" class="language-json">{&#34;status&#34;: &#34;fail&#34;, &#34;feedback&#34;: &#34;The findings are extremely insufficient for creating a high-quality course. ...&#34;}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Build the content builder" duration="3">
+        <p>The content builder writes the course from the approved research. The headings matter: the web app turns the <code>##</code> sections into a table of contents.</p>
+<p>Open <code>agents/content_builder/agent.py</code> and replace the <code>TODO</code> with:</p>
+<pre><code language="language-python" class="language-python"># --- Content Builder Agent ---
+content_builder = Agent(
+    name=&#34;content_builder&#34;,
+    model=MODEL,
+    description=&#34;Transforms research findings into a structured course.&#34;,
+    instruction=&#34;&#34;&#34;
+    You are an expert course creator.
+    Take the approved &#39;research_findings&#39; and transform them into a well-structured, engaging course module.
+
+    **Formatting Rules:**
+    1. Start with a main title using a single `#` (H1).
+    2. Use `##` (H2) for main section headings. These will be used for the Table of Contents.
+    3. Use bullet points and clear paragraphs.
+    4. Maintain a professional but engaging tone.
+
+    Ensure the content directly addresses the user&#39;s original request.
+    &#34;&#34;&#34;,
+)
+
+root_agent = content_builder
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Connect to the agents over A2A" duration="7">
+        <p>The orchestrator runs in its own process and reaches the other three agents over A2A. <code>RemoteA2aAgent</code> reads an agent&#39;s <strong>agent card</strong>, a JSON file that describes the agent and where to send messages, and then behaves like a local agent.</p>
+<p>Each agent serves its card at <code>/a2a/agent/.well-known/agent-card.json</code>. The URLs come from environment variables, so the same code runs locally and on Cloud Run.</p>
+<p>Open <code>agents/orchestrator/agent.py</code> and replace the remote-agents <code>TODO</code> with:</p>
+<pre><code language="language-python" class="language-python"># Connect to the Researcher (Localhost port 8001)
+researcher_url = os.environ.get(
+    &#34;RESEARCHER_AGENT_CARD_URL&#34;,
+    &#34;http://localhost:8001/.well-known/agent.json&#34;
+)
+researcher = RemoteA2aAgent(
+    name=&#34;researcher&#34;,
+    agent_card=researcher_url,
+    description=&#34;Gathers information using Google Search.&#34;,
+    # IMPORTANT: Save the output to state for the Judge to see
+    after_agent_callback=create_save_output_callback(&#34;research_findings&#34;),
+    # IMPORTANT: httpx client with Id Token Authentication
+    httpx_client=create_authenticated_client(researcher_url)
+)
+
+# Connect to the Judge (Localhost port 8002)
+judge_url = os.environ.get(
+    &#34;JUDGE_AGENT_CARD_URL&#34;,
+    &#34;http://localhost:8002/.well-known/agent.json&#34;
+)
+judge = RemoteA2aAgent(
+    name=&#34;judge&#34;,
+    agent_card=judge_url,
+    description=&#34;Evaluates research.&#34;,
+    after_agent_callback=create_save_output_callback(&#34;judge_feedback&#34;),
+    # IMPORTANT: httpx client with Id Token Authentication
+    httpx_client=create_authenticated_client(judge_url)
+)
+
+# Content Builder (Localhost port 8003)
+content_builder_url = os.environ.get(
+    &#34;CONTENT_BUILDER_AGENT_CARD_URL&#34;,
+    &#34;http://localhost:8003/.well-known/agent.json&#34;
+)
+content_builder = RemoteA2aAgent(
+    name=&#34;content_builder&#34;,
+    agent_card=content_builder_url,
+    description=&#34;Builds the course.&#34;,
+    # IMPORTANT: httpx client with Id Token Authentication
+    httpx_client=create_authenticated_client(content_builder_url)
+)
+</code></pre>
+<p>Two details make the agents work together:</p>
+<ul>
+<li>The <code>after_agent_callback</code> saves each agent&#39;s answer into session state, under <code>research_findings</code> and <code>judge_feedback</code>. The judge reads the research from there, and the next step reads the verdict.</li>
+<li><code>create_authenticated_client</code> adds a Google ID token to each request, which Cloud Run needs when the agents only accept authenticated calls.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="End the loop when the judge passes" duration="5">
+        <p>A loop needs a way to stop. ADK ends a <code>LoopAgent</code> when one of its agents sends an event with <code>escalate=True</code>. The escalation checker is a small custom agent that reads the judge&#39;s verdict from state and escalates on a pass.</p>
+<p>Replace the <code>EscalationChecker</code> <code>TODO</code> with:</p>
+<pre><code language="language-python" class="language-python">class EscalationChecker(BaseAgent):
+    &#34;&#34;&#34;Checks the judge&#39;s feedback and escalates (breaks the loop) if it passed.&#34;&#34;&#34;
+
+    async def _run_async_impl(
+        self, ctx: InvocationContext
+    ) -&gt; AsyncGenerator[Event, None]:
+        feedback = ctx.session.state.get(&#34;judge_feedback&#34;)
+
+        # Debug log to see what we got from the remote agent
+        print(f&#34;[EscalationChecker] Feedback received: {feedback}&#34;)
+
+        if feedback and isinstance(feedback, dict) and feedback.get(&#34;status&#34;) == &#34;pass&#34;:
+            yield Event(author=self.name, actions=EventActions(escalate=True))
+        elif isinstance(feedback, str) and &#39;&#34;status&#34;: &#34;pass&#34;&#39; in feedback:
+             yield Event(author=self.name, actions=EventActions(escalate=True))
+        else:
+            yield Event(author=self.name)
+
+escalation_checker = EscalationChecker(name=&#34;escalation_checker&#34;)
+</code></pre>
+<p>The <code>str</code> branch covers a verdict that arrives as text instead of parsed JSON.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Build the research loop and the pipeline" duration="5">
+        <p>Two workflow agents put the pieces in order. They call no model themselves; they decide which agent runs next.</p>
+<p>Replace the last two <code>TODO</code>s with:</p>
+<pre><code language="language-python" class="language-python">research_loop = LoopAgent(
+    name=&#34;research_loop&#34;,
+    description=&#34;Iteratively researches and judges until quality standards are met.&#34;,
+    sub_agents=[researcher, judge, escalation_checker],
+    max_iterations=3,
+)
+
+root_agent = SequentialAgent(
+    name=&#34;course_creation_pipeline&#34;,
+    description=&#34;A pipeline that researches a topic and then builds a course from it.&#34;,
+    sub_agents=[research_loop, content_builder],
+)
+</code></pre>
+<ul>
+<li><code>LoopAgent</code> runs researcher, judge and escalation checker in turn, at most three times. On a fail, the researcher sees the judge&#39;s feedback and searches again.</li>
+<li><code>SequentialAgent</code> runs the loop, then the content builder.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run everything locally" duration="10">
+        <p><code>run_local.sh</code> starts the three agents on ports 8001 to 8003, the orchestrator on 8004 and the web app on 8000:</p>
+<pre><code language="language-bash" class="language-bash">./run_local.sh
+</code></pre>
+<p>Check that each agent serves its card. In a second Cloud Shell tab:</p>
+<pre><code language="language-bash" class="language-bash">for p in 8001 8002 8003; do
+  curl -s http://localhost:$p/a2a/agent/.well-known/agent-card.json | python3 -c &#34;import json,sys; d=json.load(sys.stdin); print(d[&#39;name&#39;], d[&#39;supportedInterfaces&#39;][0][&#39;url&#39;])&#34;
+done
+</code></pre>
+<p>Each line shows an agent name and its A2A address, such as <code>researcher http://localhost:8001/a2a/agent</code>.</p>
+<p>Open the app: in Cloud Shell click <strong>Web Preview</strong>, then <strong>Change port</strong>, enter <code>8000</code> and click <strong>Change and Preview</strong>. Enter:</p>
+<pre><code>Create a course about the history of coffee.
+</code></pre>
+<p>The page shows the researcher, then the judge, then the content builder at work, and ends with the finished course.</p>
+<aside class="warning"><p> If an agent reports missing credentials, run <code>gcloud auth application-default login</code> and start <code>./run_local.sh</code> again. </p>
+</aside>
+<p>Stop everything with <strong>Ctrl+C</strong> in the first tab.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Deploy to Cloud Run" duration="15">
+        <p><code>deploy.sh</code> deploys five Cloud Run services from source: <code>researcher</code>, <code>judge</code>, <code>content-builder</code>, <code>orchestrator</code> and the <code>course-creator</code> web app. The four agent services only accept authenticated calls; the web app is public.</p>
+<pre><code language="language-bash" class="language-bash">./deploy.sh
+</code></pre>
+<p>The script reads each agent&#39;s URL after it deploys and passes the agent card addresses to the orchestrator:</p>
+<pre><code language="language-bash" class="language-bash">--set-env-vars RESEARCHER_AGENT_CARD_URL=$RESEARCHER_URL/a2a/agent/.well-known/agent-card.json
+</code></pre>
+<p>When it finishes, open the <code>course-creator</code> URL and try another topic.</p>
+<aside class="special"><p> The region comes from <code>gcloud config get-value compute/region</code>, and the script falls back to <code>us-central1</code> when it is unset. </p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Clean up and next steps" duration="2">
+        <p>Delete the services so they stop using your credits:</p>
+<pre><code language="language-bash" class="language-bash">for s in course-creator orchestrator researcher judge content-builder; do
+  gcloud run services delete $s --region us-central1 --quiet
+done
+</code></pre>
+<p>Use the region you deployed to if it differs.</p>
+<h2 is-upgraded>Where to go next</h2>
+<ul>
+<li>Compare your code with the finished version in <code>codelab-complete/</code>.</li>
+<li>Give each agent its own model, such as a faster model for the judge.</li>
+<li>Add tools to the researcher beyond Google Search.</li>
+<li>See <a href="https://github.com/xbill9/multi-agent" target="_blank">xbill9/multi-agent</a> for the same four agents with a streaming web app, guard and progress agents, and GKE deployment.</li>
+</ul>
+<h2 is-upgraded>What changed for ADK 2.0</h2>
+<ul>
+<li>Dependencies are google-adk 2.15 and a2a-sdk 1.3, installed with pip on the current Python.</li>
+<li>ADK 2.0 would serve an agent&#39;s A2A routes under its folder name. <code>shared/adk_app.py</code> mounts them at <code>/a2a/agent</code>, so the card addresses stay the same locally and on Cloud Run.</li>
+<li>a2a-sdk 1.x agent cards list addresses under <code>supportedInterfaces</code> instead of a single <code>url</code>, and <code>shared/a2a_utils.py</code> rewrites both forms.</li>
+<li><code>adk run</code> takes a message as an argument, so you can test an agent in one command.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>

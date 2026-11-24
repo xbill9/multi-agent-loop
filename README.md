@@ -2,6 +2,10 @@
 
 Demo code and slides for the hands-on session at Pace University (New York), Wednesday, December 2, 2026. It follows Google's codelab [Building a Multi-Agent System](https://codelabs.developers.google.com/codelabs/production-ready-ai-roadshow/1-building-a-multi-agent-system/building-a-multi-agent-system) from the Production-Ready AI Roadshow.
 
+## Codelab
+
+[Building a Multi-Agent System with ADK 2.0 and A2A](https://xbill9.github.io/multi-agent-loop/building-a-multi-agent-system-adk2/): the step-by-step lab for this repo, updated for google-adk 2.15 and a2a-sdk 1.3. Source: `codelab/building-a-multi-agent-system-adk2.md`; rebuild with `claat export -o docs codelab/building-a-multi-agent-system-adk2.md`.
+
 ## What's here
 
 | Folder | Contents |

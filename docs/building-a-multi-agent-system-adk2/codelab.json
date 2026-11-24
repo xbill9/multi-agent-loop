@@ -1,0 +1,27 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2026-11-24T13:04:24-05:00",
+  "id": "building-a-multi-agent-system-adk2",
+  "duration": 83,
+  "title": "Building a Multi-Agent System with ADK 2.0 and A2A",
+  "authors": "William McLean",
+  "summary": "Build a team of AI agents with ADK 2.0 and A2A that research a topic, judge the research and write a course, then deploy them to Cloud Run.",
+  "source": "codelab/building-a-multi-agent-system-adk2.md",
+  "theme": "",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "ai",
+    "cloudrun",
+    "adk"
+  ],
+  "tags": [
+    "workshop"
+  ],
+  "feedback": "https://github.com/xbill9/multi-agent-loop/issues",
+  "url": "building-a-multi-agent-system-adk2"
+}

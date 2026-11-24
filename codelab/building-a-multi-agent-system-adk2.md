@@ -81,8 +81,12 @@ gcloud services enable \
   artifactregistry.googleapis.com \
   cloudbuild.googleapis.com \
   aiplatform.googleapis.com \
-  compute.googleapis.com
+  compute.googleapis.com \
+  cloudtrace.googleapis.com \
+  logging.googleapis.com
 ```
+
+The agents send traces to Cloud Trace, so leaving that API off fills the logs with `PERMISSION_DENIED` errors.
 
 Clone the repository and move into the starter:
 
@@ -97,8 +101,16 @@ Install the dependencies for all four agents and the web app:
 python3 -m pip install -r requirements.txt
 ```
 
+Cloud Shell installs the packages into `~/.local`, on its Python 3.12. pip then lists conflicts with tools Cloud Shell has preinstalled, such as `google-agents-cli` and `litellm`; the lab uses none of them, so you can ignore those lines. Check the result:
+
+```bash
+adk --version
+```
+
+It should print `adk, version 2.15.0` or newer.
+
 <aside class="negative">
-If pip stops with <code>externally-managed-environment</code>, add <code>--user</code>, or <code>--break-system-packages</code> in Cloud Shell, whose machine is reset between sessions.
+On your own machine, pip may stop with <code>externally-managed-environment</code>. Add <code>--user</code> to the install command.
 </aside>
 
 Create the environment file and load it:

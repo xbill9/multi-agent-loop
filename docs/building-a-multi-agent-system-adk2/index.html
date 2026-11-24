@@ -90,8 +90,11 @@ gcloud auth list
   artifactregistry.googleapis.com \
   cloudbuild.googleapis.com \
   aiplatform.googleapis.com \
-  compute.googleapis.com
+  compute.googleapis.com \
+  cloudtrace.googleapis.com \
+  logging.googleapis.com
 </code></pre>
+<p>The agents send traces to Cloud Trace, so leaving that API off fills the logs with <code>PERMISSION_DENIED</code> errors.</p>
 <p>Clone the repository and move into the starter:</p>
 <pre><code language="language-bash" class="language-bash">git clone https://github.com/xbill9/multi-agent-loop.git
 cd multi-agent-loop/codelab-starter
@@ -99,7 +102,11 @@ cd multi-agent-loop/codelab-starter
 <p>Install the dependencies for all four agents and the web app:</p>
 <pre><code language="language-bash" class="language-bash">python3 -m pip install -r requirements.txt
 </code></pre>
-<aside class="warning"><p> If pip stops with <code>externally-managed-environment</code>, add <code>--user</code>, or <code>--break-system-packages</code> in Cloud Shell, whose machine is reset between sessions. </p>
+<p>Cloud Shell installs the packages into <code>~/.local</code>, on its Python 3.12. pip then lists conflicts with tools Cloud Shell has preinstalled, such as <code>google-agents-cli</code> and <code>litellm</code>; the lab uses none of them, so you can ignore those lines. Check the result:</p>
+<pre><code language="language-bash" class="language-bash">adk --version
+</code></pre>
+<p>It should print <code>adk, version 2.15.0</code> or newer.</p>
+<aside class="warning"><p> On your own machine, pip may stop with <code>externally-managed-environment</code>. Add <code>--user</code> to the install command. </p>
 </aside>
 <p>Create the environment file and load it:</p>
 <pre><code language="language-bash" class="language-bash">cp .env.example .env

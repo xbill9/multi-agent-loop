@@ -1,6 +1,10 @@
 # Building a Multi-Agent System: workshop demo
 
-Demo code and slides for the hands-on session at Pace University (New York), Wednesday, December 2, 2026. It follows Google's codelab [Building a Multi-Agent System](https://codelabs.developers.google.com/codelabs/production-ready-ai-roadshow/1-building-a-multi-agent-system/building-a-multi-agent-system) from the Production-Ready AI Roadshow.
+Demo code and slides for the hands-on session at Pace University (New York), Wednesday, December 2, 2026.
+
+**Codelab: https://xbill9.github.io/multi-agent-loop/building-a-multi-agent-system-adk2/**
+
+It updates Google's codelab [Building a Multi-Agent System](https://codelabs.developers.google.com/codelabs/production-ready-ai-roadshow/1-building-a-multi-agent-system/building-a-multi-agent-system) from the Production-Ready AI Roadshow for google-adk 2.15 and a2a-sdk 1.3.
 
 ## Codelab
 
@@ -32,8 +36,7 @@ You need a Google Cloud project with billing on (workshop credits work).
 cd codelab-complete
 cp .env.example .env    # set GOOGLE_CLOUD_PROJECT
 source .env
-python3 -m pip install "google-adk>=2.15" "a2a-sdk>=1.3" "google-genai>=3.6.1" \
-  fastapi uvicorn httpx httpx_sse google-cloud-logging opentelemetry-exporter-gcp-trace
+python3 -m pip install -r requirements.txt
 ./run_local.sh          # agents on 8001-8004, web app on 8000
 ```
 

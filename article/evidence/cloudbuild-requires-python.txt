@@ -1,0 +1,9 @@
+# Cloud Build log for the first failed researcher build (Cloud Run source deploy), build 7bfa6cf7-4fba-48d2-b59e-8eb422e38900, project comglitn, us-central1
+Step 8/13 : RUN uv venv /opt/venv &&     . /opt/venv/bin/activate &&     if [ -f pyproject.toml ]; then         uv sync --active;     elif [ -f requirements.txt ]; then         uv pip install -U -r requirements.txt;     else         echo "Neither pyproject.toml nor requirements.txt found" && exit 1;     fi
+Using CPython 3.12.16 interpreter at: /usr/local/bin/python3
+error: No solution found when resolving dependencies for split (markers: python_full_version == '3.10.*')
+  cause: Because the requested Python version (>=3.10) does not satisfy Python>=3.11 and fastapi==0.165.0 depends on Python>=3.11, we can conclude that fastapi==0.165.0 cannot be used.
+hint: While the active Python version is 3.12, the resolution failed for other Python versions supported by your project. Consider limiting your project's supported Python versions using `requires-python`.
+hint: The `requires-python` value (>=3.10) includes Python versions that are not supported by your dependencies (e.g., fastapi==0.165.0 only supports >=3.11). Consider using a more restrictive `requires-python` value (like >=3.11).
+ERROR
+ERROR: build step 0 "gcr.io/cloud-builders/docker" failed: step exited with non-zero status: 1

@@ -1,0 +1,9 @@
+# Local package versions, captured 2026-11-24T20:27:38Z on the author's workstation (pyenv)
+Python 3.14.7
+a2a-sdk                                        1.3.1
+fastapi                                        0.165.0
+google-adk                                     2.15.0
+google-genai                                   2.34.0
+sse-starlette                                  3.4.11
+starlette                                      1.10.0
+uvicorn                                        0.54.0

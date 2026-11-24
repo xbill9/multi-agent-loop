@@ -1,0 +1,8 @@
+# google-adk 2.15.0 source, installed package: single-agent mode and A2A mounting (google/adk/cli/fast_api.py)
+242:  is_single_agent = is_single_agent_directory(agents_path)
+247:    single_agent_name = agents_path.name
+248:    agents_dir = str(agents_path.parent)
+416:    base_path = Path.cwd() / agents_dir
+459:    base_path = Path.cwd() / agents_dir
+474:        # only folders with an agent.json file representing agent card are valid
+503:              prefix=f"/a2a/{app_name}",

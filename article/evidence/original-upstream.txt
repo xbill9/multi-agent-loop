@@ -1,0 +1,10 @@
+# Original upstream code as imported in commit 608e0a7 (GoogleCloudPlatform/devrel-demos prai-roadshow-lab-1-complete)
+## agents/researcher/pyproject.toml
+requires-python = ">=3.10,<3.14"
+    "google-adk>=1.27.4,<2.0.0",
+    "a2a-sdk==0.3.*",
+## run_local.sh
+uv run adk_app.py --host 0.0.0.0 --port 8001 --a2a . &
+uv run adk_app.py --host 0.0.0.0 --port 8002 --a2a . &
+## agent.py unchanged since import: git diff 608e0a7 HEAD -- codelab-complete/agents/*/agent.py | wc -l
+0

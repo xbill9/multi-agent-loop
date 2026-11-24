@@ -1,0 +1,39 @@
+# Cloud Shell, account's own Cloud Shell VM, project comglitn, 2026-11-24.
+# Output captured verbatim from `gcloud cloud-shell ssh --command ...` runs in this session.
+
+## Environment
+Python 3.12.3
+pip 24.0 from /usr/lib/python3/dist-packages/pip (python 3.12)
+/usr/lib/python3.12/EXTERNALLY-MANAGED
+global.break-system-packages='true'
+
+## After: python3 -m pip install -r requirements.txt   (codelab-starter)
+pip exit 0
+/usr/local/bin/adk
+adk, version 2.15.0
+adk 2.15.0 genai 2.34.0 fastapi 0.165.0 /home/xbill/.local/lib/python3.12/site-packages/google/adk/__init__.py
+Version: 1.3.1
+Location: /home/xbill/.local/lib/python3.12/site-packages
+
+## adk run agents/judge "Topic: Tokyo. Findings: Tokyo is a city."
+[judge]: {"status":"fail","feedback":"The finding 'Tokyo is a city' is far too brief and lacks the depth necessary to create a high-quality course. To improve, research should include: 1. Historical d
+
+## adk run agents/researcher "Find the population of Tokyo in 2020"
+[researcher]: The population of Tokyo in 2020 was approximately **14,047,594** people.
+
+## ./run_local.sh, then agent cards and one prompt to localhost:8000/api/chat_stream
+listening=5 after 9s
+researcher http://localhost:8001/a2a/agent
+judge http://localhost:8002/a2a/agent
+content_builder http://localhost:8003/a2a/agent
+curl exit 0
+Counter({'progress': 24, 'result': 1})
+chars 36020 h2 42
+
+## ./deploy.sh (final run), service URLs
+Service URL: https://researcher-1056842563084.us-central1.run.app
+Service URL: https://content-builder-1056842563084.us-central1.run.app
+Service URL: https://judge-1056842563084.us-central1.run.app
+Service URL: https://orchestrator-1056842563084.us-central1.run.app
+Service URL: https://course-creator-1056842563084.us-central1.run.app
+DEPLOY_EXIT=0

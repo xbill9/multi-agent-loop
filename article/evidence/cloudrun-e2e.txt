@@ -1,0 +1,18 @@
+# Deployed services, project comglitn, us-central1, 2026-11-24. Captured verbatim from the workstation.
+## GET course-creator home, then one prompt to /api/chat_stream
+home: 200
+curl exit 0
+Counter({'progress': 14, 'result': 1})
+chars 25470 h2 12
+## Agent cards fetched with no credentials
+researcher unauth: 403
+judge unauth: 403
+content-builder unauth: 403
+orchestrator unauth: 403
+## Clean-up (codelab step 13, run in Cloud Shell)
+Deleted service [course-creator].
+Deleted service [orchestrator].
+Deleted service [researcher].
+Deleted service [judge].
+Deleted service [content-builder].
+0

@@ -1,0 +1,10 @@
+# adk run --help, google-adk 2.15.0
+Usage: adk run [OPTIONS] AGENT [QUERY]
+
+  Runs an agent. If no query is provided, enters interactive mode.
+
+  AGENT: The path to the agent source code folder. QUERY: Optional. The user
+  message to send to the agent for a single-step run.
+
+  Example:
+

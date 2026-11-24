@@ -1,0 +1,14 @@
+# Workstation, Python 3.14.7, google-adk 2.15.0, a2a-sdk 1.3.1, 2026-11-24. Captured verbatim.
+## Agent cards after mounting A2A at /a2a/agent
+8001 researcher ['http://localhost:8001/a2a/agent']
+8002 judge ['http://localhost:8002/a2a/agent']
+8003 content_builder ['http://localhost:8003/a2a/agent']
+## Before the change: researcher served A2A under its folder name, nothing at /a2a/agent
+researcher: 404   (GET /a2a/researcher/.well-known/agent-card.json, card file written to ./researcher/agent.json)
+agent: 404        (GET /a2a/agent/.well-known/agent-card.json)
+["researcher"]    (GET /list-apps)
+## a2a-sdk 1.x card served by the agent
+{"name": "researcher", "description": "Gathers information on a topic using Google Search.", "supportedInterfaces": [{"url": "http://127.0.0.1/a2a/researcher", "protocolBinding": "JSONRPC", "protocolVersion": "1.0"}], "version": "0.0.1", "capabilities": {"streaming": true}
+## Startup error before the a2a-sdk 1.x serialization change
+AttributeError: model_dump_json      (card_json = agent_card.model_dump_json(indent=2), shared/adk_app.py)
+ImportError: cannot import name 'EXTENDED_AGENT_CARD_PATH' from 'a2a.utils.constants'

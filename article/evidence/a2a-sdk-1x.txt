@@ -1,0 +1,9 @@
+# a2a-sdk 1.3.1, installed package
+## a2a/utils/constants.py card paths
+8:AGENT_CARD_WELL_KNOWN_PATH = '/.well-known/agent-card.json'
+## extras that bring sse-starlette
+sse-starlette; extra == 'all'
+sse-starlette; extra == 'fastapi'
+sse-starlette; extra == 'http-server'
+## google-adk 2.15.0 requirement on google-genai
+google-genai>=2.34,<3

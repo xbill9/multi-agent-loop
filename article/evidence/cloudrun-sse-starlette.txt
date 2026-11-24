@@ -1,0 +1,9 @@
+# Cloud Run researcher crash, project comglitn, 2026-11-24 (Cloud Logging)
+    _compat.attach_a2a_routes_to_app(
+  File "/opt/venv/lib/python3.12/site-packages/google/adk/a2a/_compat.py", line 974, in attach_a2a_routes_to_app
+  File "/opt/venv/lib/python3.12/site-packages/a2a/server/routes/__init__.py", line 9, in <module>
+  File "/opt/venv/lib/python3.12/site-packages/a2a/server/routes/jsonrpc_routes.py", line 22, in <module>
+  File "/opt/venv/lib/python3.12/site-packages/a2a/server/routes/jsonrpc_dispatcher.py", line 12, in <module>
+    from a2a.compat.v0_3.jsonrpc_adapter import JSONRPC03Adapter
+  File "/opt/venv/lib/python3.12/site-packages/a2a/compat/v0_3/jsonrpc_adapter.py", line 6, in <module>
+ModuleNotFoundError: No module named 'sse_starlette'

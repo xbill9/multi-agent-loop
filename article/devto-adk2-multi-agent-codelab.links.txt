@@ -1,0 +1,5 @@
+devto-gde = https://dev.to/gde/updating-googles-multi-agent-codelab-for-adk-20-and-a2a-1x-4cpg
+medium = https://medium.com/@xbill999/updating-googles-multi-agent-codelab-for-adk-2-0-and-a2a-1-x-2520f8f9bc26
+substack = https://xbill9.substack.com/p/updating-googles-multi-agent-codelab
+repo = https://github.com/xbill9/multi-agent-loop
+linkedin-article = https://www.linkedin.com/pulse/updating-googles-multi-agent-codelab-adk-20-a2a-1x-william-mclean-rmfbc/

@@ -9,7 +9,7 @@ Demo code and slides for the hands-on session at Pace University (New York), Wed
 | `codelab-starter/` | The starter attendees clone, with `TODO`s for each agent |
 | `codelab-complete/` | The finished solution: researcher, judge, content builder, orchestrator and web app |
 
-Both come from [GoogleCloudPlatform/devrel-demos](https://github.com/GoogleCloudPlatform/devrel-demos/tree/main/agents/build-with-ai/production-ready-ai) under the Apache 2.0 license (see `LICENSE`).
+Both come from [GoogleCloudPlatform/devrel-demos](https://github.com/GoogleCloudPlatform/devrel-demos/tree/main/agents/build-with-ai/production-ready-ai) under the Apache 2.0 license (see `LICENSE`), updated to run on the latest Python, google-adk 2.x and a2a-sdk 1.x.
 
 ## The system
 
@@ -28,7 +28,8 @@ You need a Google Cloud project with billing on (workshop credits work).
 cd codelab-complete
 cp .env.example .env    # set GOOGLE_CLOUD_PROJECT
 source .env
-uv sync
+python3 -m pip install "google-adk>=2.15" "a2a-sdk>=1.3" "google-genai>=3.6.1" \
+  fastapi uvicorn httpx httpx_sse google-cloud-logging opentelemetry-exporter-gcp-trace
 ./run_local.sh          # agents on 8001-8004, web app on 8000
 ```
 

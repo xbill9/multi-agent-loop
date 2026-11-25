@@ -61,7 +61,7 @@ def draw(w, h):
         t = math.radians(a_to)
         tip = (lcx + R * math.cos(t), lcy + R * math.sin(t))
         arrow_head(d, tip, t + math.pi / 2, 0.42 * u, INK_2)
-    for (cx, cy2), (_, col) in zip(pts, nodes):
+    for (cx, cy2), (_, col) in zip(pts, nodes, strict=True):
         if col == INK_3:
             d.ellipse([cx - r, cy2 - r, cx + r, cy2 + r], fill=SURFACE, outline=INK_3, width=6 * k)
             d.ellipse([cx - r * 0.35, cy2 - r * 0.35, cx + r * 0.35, cy2 + r * 0.35], fill=INK_3)

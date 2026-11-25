@@ -282,7 +282,7 @@ judge = RemoteA2aAgent(
     httpx_client=create_authenticated_client(judge_url)
 )
 
-# Content Builder (Localhost port 8003)
+# Content Builder (Localhost port 8003) - Implementation hidden for this lab
 content_builder_url = os.environ.get(
     "CONTENT_BUILDER_AGENT_CARD_URL",
     "http://localhost:8003/.well-known/agent.json"

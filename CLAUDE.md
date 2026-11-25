@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Workshop demo and codelab "Building a Multi-Agent System with ADK 2.0 and A2A" (an update of Google's codelab), presented at Pace University on 2026-12-02. Slides: Google Slides deck `1FVo8PcPUvdesq0asK6dQBcKdsSF0TGisCLlpe0v6C_w`.
 
+## Commands
+
+`make check` (lint + offline test: compile, codelab python blocks match `codelab-complete` via `scripts/check_codelab.py`, `docs/` matches a fresh claat export). Also `make docs`, `make run`, `make deploy`, `make install`, `make clean`.
+
 ## Codelab
 
 - Source: `codelab/building-a-multi-agent-system-adk2.md` (claat markdown). `docs/` is generated and served by GitHub Pages at https://xbill9.github.io/multi-agent-loop/building-a-multi-agent-system-adk2/. Edit the markdown, then run `claat export -o docs codelab/building-a-multi-agent-system-adk2.md`; never hand-edit `docs/`.

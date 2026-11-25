@@ -23,7 +23,11 @@ One request runs researcher → judge → content builder and streams a result. 
 | 13 | content_builder | 5,659 chars, `thought: true` |
 | 14 | content_builder | same 5,659 chars, final |
 
-So the result shown to the user is research findings + judge JSON + course, each repeated (`"status": "pass"` appears twice in it). Fix, untested: skip parts with `thought: true` and keep only the content builder's final text.
+So the result shown to the user was research findings + judge JSON + course, each repeated (`"status": "pass"` appeared twice in it).
+
+Fixed in `app/main.py` (starter and complete): parts with `thought: true` are skipped and the result is the content builder's final text, falling back to the last other text when the content builder never replies, so error events still show. Same prompt afterwards: 5,464 chars, 8 headings, none repeated, no judge JSON.
+
+The content builder sometimes writes doubled heading markers (`## ## Module 1: ...`). That is in the model's output.
 
 ### "A2A protocol" alone is read as Hyperledger Aries
 

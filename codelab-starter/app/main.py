@@ -179,6 +179,7 @@ async def chat_stream(request: SimpleChatRequest):
 
     async def event_generator():
         final_text = ""
+        fallback_text = ""
         async for event in events:
             # Send progress updates based on which agent is active
             if event["author"] == "researcher":
@@ -187,14 +188,19 @@ async def chat_stream(request: SimpleChatRequest):
                  yield json.dumps({"type": "progress", "text": "⚖️ Judge is evaluating findings..."}) + "\n"
             elif event["author"] == "content_builder":
                  yield json.dumps({"type": "progress", "text": "✍️ Content Builder is writing the course..."}) + "\n"
-            # Accumulate final text
+            # Each remote agent's reply arrives twice over A2A: first as a thought
+            # (in-progress update), then as the final message. Keep the final one,
+            # and return only the content builder's course.
             if "content" in event and event["content"]:
                 content = genai_types.Content.model_validate(event["content"])
-                for part in content.parts: # type: ignore
-                    if part.text:
-                        final_text += part.text
+                text = "".join(p.text for p in content.parts or [] if p.text and not p.thought)
+                if text:
+                    if event["author"] == "content_builder":
+                        final_text = text
+                    else:
+                        fallback_text = text
         # Send final result
-        yield json.dumps({"type": "result", "text": final_text.strip()}) + "\n"
+        yield json.dumps({"type": "result", "text": (final_text or fallback_text).strip()}) + "\n"
 
     return StreamingResponse(event_generator(), media_type="application/x-ndjson")
 

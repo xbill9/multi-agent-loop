@@ -33,12 +33,15 @@ lint:
 
 # docs/ is generated; a fresh claat export must match it, apart from the two
 # files added by hand for GitHub Pages (index.html redirect and .nojekyll).
+# claat stamps codelab.json "updated" with the markdown's mtime in local time,
+# which differs per checkout, and creates an empty img/ that git cannot track.
 test:
 	python3 -m compileall -q codelab-complete codelab-starter scripts article
 	python3 scripts/check_codelab.py $(CODELAB)
 	rm -rf $(TMP) && mkdir -p $(TMP)
 	claat export -o $(TMP) $(CODELAB)
-	diff -r -x index.html -x .nojekyll $(TMP) docs
+	find $(TMP) -type d -empty -delete
+	diff -r -I '"updated":' -x index.html -x .nojekyll $(TMP) docs
 	rm -rf $(TMP)
 	@echo "test OK"
 

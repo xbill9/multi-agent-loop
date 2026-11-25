@@ -47,8 +47,10 @@ test:
 
 check: lint test
 
+# Drops the empty img/ claat creates, so docs/ matches what git tracks and make test.
 docs:
 	claat export -o docs $(CODELAB)
+	find docs -type d -empty -delete
 
 run:
 	cd codelab-complete && ./run_local.sh

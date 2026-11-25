@@ -53,3 +53,19 @@ After that: 0 export errors in the log, and the request's `POST /api/chat_stream
 - `lsof` is missing, so `run_local.sh` cannot free ports 8000–8004 before starting. Check with `ss -ltnp | grep -E ':800[0-4]'`.
 - The `make test` docs diff ignores claat's `"updated"` timestamp and its empty `img/` (commit 5e375cb); both differ per checkout.
 - Project `aisprint-491218` also receives `/api/tick` traces about once a minute from another service. Filter on `root:"POST /api/chat_stream"` when looking for this app's spans.
+
+## 2026-11-25: Cloud Run deploy
+
+`make deploy` to `aisprint-491218`, region `us-central1` (no `GOOGLE_CLOUD_LOCATION` or compute region set, so `deploy.sh` defaults to it). All five services deployed with exit 0, no prompts:
+
+| Service | URL | Access |
+|---|---|---|
+| researcher | https://researcher-289270257791.us-central1.run.app | authenticated only |
+| content-builder | https://content-builder-289270257791.us-central1.run.app | authenticated only |
+| judge | https://judge-289270257791.us-central1.run.app | authenticated only |
+| orchestrator | https://orchestrator-289270257791.us-central1.run.app | authenticated only |
+| course-creator (web app) | https://course-creator-289270257791.us-central1.run.app | public |
+
+One request through the public web app with the Agent2Agent prompt: 27 s, 5,477 chars, 8 headings, none repeated, no judge JSON.
+
+Before deploying, all five images were built from dereferenced tars and started with `PORT=8080`: agent cards and `/list-apps` returned 200. The web app's only traceback in the local container was Cloud Trace export without credentials.

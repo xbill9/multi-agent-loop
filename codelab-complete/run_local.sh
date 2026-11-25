@@ -2,7 +2,7 @@
 
 # Kill any existing processes on these ports
 echo "Stopping any existing processes on ports 8000-8004..."
-lsof -ti:8000,8001,8002,8003,8004 | xargs kill -9 2>/dev/null
+fuser -k 8000/tcp 8001/tcp 8002/tcp 8003/tcp 8004/tcp 2>/dev/null
 
 # Set common environment variables for local development
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)

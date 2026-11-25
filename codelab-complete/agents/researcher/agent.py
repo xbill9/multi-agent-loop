@@ -15,6 +15,7 @@ researcher = Agent(
     If you receive feedback that your research is insufficient, use the feedback to refine your next search.
     DO NOT output any function calls. Provide your research directly as text.
     """,
+    tools=[google_search],
 )
 
 root_agent = researcher

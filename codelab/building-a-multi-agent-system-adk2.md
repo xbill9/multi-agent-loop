@@ -126,7 +126,7 @@ The starter has one folder per agent under `agents/`, plus the web app in `app/`
 ## Build the researcher
 Duration: 5
 
-The researcher is a single ADK `Agent`: a model, a description that other agents read, and an instruction.
+The researcher is a single ADK `Agent`: a model, a description that other agents read, an instruction, and the built-in `google_search` tool, so its findings come from live search results.
 
 Open `agents/researcher/agent.py` and replace the `TODO` with:
 
@@ -142,6 +142,7 @@ researcher = Agent(
     If you receive feedback that your research is insufficient, use the feedback to refine your next search.
     DO NOT output any function calls. Provide your research directly as text.
     """,
+    tools=[google_search],
 )
 
 root_agent = researcher

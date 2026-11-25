@@ -50,7 +50,7 @@ After that: 0 export errors in the log, and the request's `POST /api/chat_stream
 ### Machine setup for `make check` and `make run`
 
 - ruff and claat were missing. ruff: `python3 -m pip install --user --break-system-packages ruff` (Ubuntu 24.04 has no apt package), lands in `~/.local/bin`. claat: `go install github.com/googlecodelabs/tools/claat@latest`, lands in `~/go/bin`. Neither directory is on `PATH` by default.
-- `lsof` is missing, so `run_local.sh` cannot free ports 8000–8004 before starting. Check with `ss -ltnp | grep -E ':800[0-4]'`.
+- `lsof` is missing on Cloud Shell, so `run_local.sh` frees ports 8000–8004 with `fuser -k`. Check with `ss -ltnp | grep -E ':800[0-4]'`.
 - The `make test` docs diff ignores claat's `"updated"` timestamp and its empty `img/` (commit 5e375cb); both differ per checkout.
 - Project `aisprint-491218` also receives `/api/tick` traces about once a minute from another service. Filter on `root:"POST /api/chat_stream"` when looking for this app's spans.
 

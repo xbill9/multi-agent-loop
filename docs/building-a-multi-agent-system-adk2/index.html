@@ -119,7 +119,7 @@ set -a; source .env; set +a
       </google-codelab-step>
     
       <google-codelab-step label="Build the researcher" duration="5">
-        <p>The researcher is a single ADK <code>Agent</code>: a model, a description that other agents read, and an instruction.</p>
+        <p>The researcher is a single ADK <code>Agent</code>: a model, a description that other agents read, an instruction, and the built-in <code>google_search</code> tool, so its findings come from live search results.</p>
 <p>Open <code>agents/researcher/agent.py</code> and replace the <code>TODO</code> with:</p>
 <pre><code language="language-python" class="language-python"># --- Researcher Agent ---
 researcher = Agent(
@@ -132,6 +132,7 @@ researcher = Agent(
     If you receive feedback that your research is insufficient, use the feedback to refine your next search.
     DO NOT output any function calls. Provide your research directly as text.
     &#34;&#34;&#34;,
+    tools=[google_search],
 )
 
 root_agent = researcher

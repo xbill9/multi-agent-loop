@@ -32,6 +32,7 @@ Workshop demo and codelab "Building a Multi-Agent System with ADK 2.0 and A2A" (
 - Attendees install with `python3 -m pip install -r requirements.txt` (in `codelab-starter/` and `codelab-complete/`); keep it in sync with the agent and app `pyproject.toml` files.
 - Ports: researcher 8001, judge 8002, content builder 8003, orchestrator 8004, web app 8000. Agents start with `python3 adk_app.py --host 0.0.0.0 --port <port> --a2a .` from their own directory (the orchestrator runs without `--a2a`).
 - Env: `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=global`, `GOOGLE_GENAI_USE_VERTEXAI=true` (see `.env.example`). Model is hardcoded as `MODEL = "gemini-3-flash-preview"` in each `agent.py`.
+- On Cloud Shell there is no ADC file, so the web app's Cloud Trace export fails with a quota-project 403. Start with `GOOGLE_CLOUD_QUOTA_PROJECT=<project> make run`. Findings from local runs are in `NOTES.md`.
 - Agent cards locally: `http://localhost:800N/a2a/agent/.well-known/agent-card.json`. The orchestrator reads them from `RESEARCHER_AGENT_CARD_URL`, `JUDGE_AGENT_CARD_URL`, `CONTENT_BUILDER_AGENT_CARD_URL`; the web app needs `AGENT_SERVER_URL`.
 
 ## Lint
